@@ -17,11 +17,14 @@ class ProcessorTest(unittest.TestCase):
         for i in range(3):
             asset_id = 'asset_%s' % i
             repo_path = os.path.join(self.dirs['repos'], asset_id) 
-            self.create_repo(asset_id, repo_path)
+            self.create_repo(repo_path)
             self.asset_defs[asset_id] =  {
                 'type': 'git',
                 'uri': repo_path,
             }
+
+        # Branch refspec.
+        self.asset_defs['asset_0']['refspec'] = 'b1'
 
     def create_repo(self, repo_path):
         parent_dir, basepath = os.path.split(repo_path)
@@ -33,12 +36,22 @@ class ProcessorTest(unittest.TestCase):
         touch foo;
         git add .;
         git commit -am "initialized";
-        '''
+        git checkout -b b1;
+        touch b1_foo;
+        git add .;
+        git commit -am "added b1_foo";
+        git rev-parse HEAD;
+        git checkout master;
+        ''' % (
+            parent_dir,
+            basepath,
+            basepath
+        )
         subprocess.call(cmd, shell=True)
 
 
     def tearDown(self):
-        for dir_ in [self.repos_dir, self.cache_dir, self.target_dir]:
+        for dir_ in self.dirs.values():
             shutil.rmtree(dir_)
 
     def test_resolve_asset_defs(self):
@@ -47,4 +60,13 @@ class ProcessorTest(unittest.TestCase):
             target_dir=self.dirs['target']
         )
         processor.resolve_asset_defs(self.asset_defs)
+
+        for asset_id, asset_def in self.asset_defs.items():
+            asset_target = os.path.join(self.dirs['target'], asset_id)
+            print os.listdir(asset_target)
+
+
+
+if __name__ == '__main__':
+    unittest.main()
 

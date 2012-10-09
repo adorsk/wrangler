@@ -1,4 +1,4 @@
-from . import assets
+import wrangler.assets as assets
 
 
 class Processor(object):
@@ -9,7 +9,7 @@ class Processor(object):
 
     def resolve_asset_defs(self, asset_definitions={}):
         for asset_id, asset_def in asset_definitions.items():
-            self.resolve_asset_def(asset_def)
+            self.resolve_asset_def(asset_id, asset_def)
 
     def resolve_asset_def(self, asset_id, asset_def):
         # Create asset from asset definition.
@@ -18,10 +18,17 @@ class Processor(object):
 
     def asset_def_to_asset(self, asset_id, asset_def):
         """ Convert an asset definition to an asset object. """
-        asset_args = {'id': asset_id}
+        asset_args = {
+            'id': asset_id,
+            'cache_dir': self.cache_dir,
+            'target_dir': self.target_dir
+        }
         asset_type = asset_def.get('type')
         if asset_type == 'git':
             AssetClass = assets.GitAsset
-            asset_args.update({})
+            asset_args.update({
+                'uri': asset_def['uri'],
+                'refspec': asset_def.get('refspec')
+            })
 
         return AssetClass(**asset_args)

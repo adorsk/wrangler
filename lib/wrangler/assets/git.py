@@ -1,4 +1,3 @@
-import tempfile
 import os, shutil, subprocess
 import copy
 
@@ -97,12 +96,11 @@ class GitAsset(object):
 
         # If repo is not in cache, clone it and it to the cache.
         if not os.path.exists(cache_path):
-            tmp_dir = tempfile.mkdtemp()
-            self.clone_repo(dest=cache_dir)
+            self.clone_repo(dest=cache_path)
 
-        # If no refspec was given, pull the latest.
+        # If no refspec was given, checkout master branch.
         if self.refspec is None:
-            subprocess.call("cd %s; git checkout HEAD" % (cache_path) , shell=True)
+            subprocess.call("cd %s; git checkout master" % (cache_path) , shell=True)
 
         # Otherwise if there was a ref...
         else:

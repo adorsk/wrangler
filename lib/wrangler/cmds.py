@@ -7,7 +7,7 @@ from processor import Processor
 
 
 config = {}
-assets_file_path = 'AssetFile.py'
+asset_file_path = 'AssetFile.py'
 
 #@TODO: get config from a more standard place.
 def read_config():
@@ -32,7 +32,7 @@ def show():
 #@TODO: disabled for now!
 def clean():
     """ Clear out the target dir. """
-    assets_data = read_assets_file()
+    assets_data = read_asset_file()
     config = assets_data['config']
     for item in os.listdir(config['TARGET_DIR']):
         item_path = os.path.join(config['TARGET_DIR'], item)
@@ -41,7 +41,7 @@ def clean():
 
 def install():
     """ Install assets in target dir. """
-    assets_data = read_assets_file()
+    assets_data = read_asset_file()
     config = assets_data['config']
     for dir_ in [config['CACHE_DIR'], config['TARGET_DIR']]:
         if not os.path.exists(dir_):
@@ -53,10 +53,10 @@ def install():
     )
     processor.resolve_asset_defs(assets_data['assets'])
 
-def read_assets_file():
+def read_asset_file():
     # Read in asset file.
     assets_data = {}
-    execfile(assets_file_path, assets_data)
+    execfile(asset_file_path, assets_data)
     return assets_data
 
 if __name__ == '__main__':

@@ -25,7 +25,7 @@ class AssetCache(object):
         metadata['cache_path'] = cache_path
         self._registry[key] = copy.deepcopy(metadata)
 
-    def __del(self, key):
+    def __delitem__(self, key):
         metadata = self._registry[key]
         shutil.rmtree(metadata.get('cache_path'))
         del self._registry[key]
@@ -68,14 +68,15 @@ class AssetTargetDir(object):
 #@TODO: improve passing of cache, target_dir.
 class GitAsset(object):
 
-    def __init__(self, id=None, uri=None, refspec=None, path=None, include_dot_git=False,
-                 cache=None, target_dir=None, **kwargs):
+    def __init__(self, id=None, uri=None, refspec=None, path=None, 
+                 include_dot_git=False, cache_dir=None, 
+                 target_dir=None, **kwargs):
         self.id = id
         self.uri = uri
         self.refspec = refspec
         self.path = path
         self.include_dot_git = include_dot_git
-        self.cache = cache
+        self.cache_dir = cache_dir
         self.target_dir = target_dir
         super(GitAsset, self).__init__(**kwargs)
 
@@ -86,15 +87,18 @@ class GitAsset(object):
         subprocess.call(['git', 'clone', self.uri, dest])
 
     def resolve(self):
-        # If repo is not in cache, clone it and it to the cache.
-        if self.id not in self.cache:
-            tmp_dir = tempfile.mkdtemp()
-            self.clone_repo(dest=tmp_dir)
-            metadata = {'path': tmp_dir}
-            self.cache[self.id] = metadata
+        # If already in the target, do nothing.
+        target_path = os.path.join(self.target_dir, self.id)
+        if os.path.exists(target_path):
+            return
 
         # Get the cache path.
-        cache_path = self.cache[self.id]['cache_path']
+        cache_path = os.path.join(self.cache_dir, self.id)
+
+        # If repo is not in cache, clone it and it to the cache.
+        if not os.path.exists(cache_path):
+            tmp_dir = tempfile.mkdtemp()
+            self.clone_repo(dest=cache_dir)
 
         # If no refspec was given, pull the latest.
         if self.refspec is None:
@@ -102,7 +106,7 @@ class GitAsset(object):
 
         # Otherwise if there was a ref...
         else:
-            # If we don't have the refspec locally, then fetch it.
+            # If we don't have the refspec locally, then do a fetch.
             retcode = subprocess.call(
                 ("cd %s; git rev-parse --verify -q %s") % (cache_path,
                                                            self.refspec), 
@@ -110,15 +114,13 @@ class GitAsset(object):
             )
             if retcode != 0:
                 subprocess.call(
-                    ("cd %s; git fetch %s %s") % (cache_path, self.uri,
-                                                  self.refspec),
+                    ("cd %s; git fetch") % (cache_path),
                     shell=True
                 )
 
             # Checkout the rev.
             subprocess.call(
-                ("cd %s; git checkout %s %s") % (cache_path, self.uri,
-                                                 self.refspec),
+                ("cd %s; git checkout %s") % (cache_path, self.refspec),
                 shell=True
             )
 
@@ -137,7 +139,4 @@ class GitAsset(object):
             if not self.include_dot_git:
                 copy_kwargs['ignore'] = shutil.ignore_patterns('.git')
 
-        self.target_dir[self.id] = {
-            'path': source_path,
-            'copy_kwargs': copy_kwargs
-        }
+        shutil.copytree(source_path, target_path, **copy_kwargs)

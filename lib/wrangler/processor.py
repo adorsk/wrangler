@@ -23,13 +23,13 @@ class Processor(object):
             'cache_dir': self.cache_dir,
             'target_dir': self.target_dir
         }
+        asset_args.update(asset_def)
+
         asset_type = asset_def.get('type')
+
         if asset_type == 'git':
             AssetClass = assets.GitAsset
-            asset_args.update({
-                'uri': asset_def['uri'],
-                'refspec': asset_def.get('refspec'),
-                'path': asset_def.get('path')
-            })
+        elif asset_type == 'rsync':
+            AssetClass = assets.RsyncAsset
 
         return AssetClass(**asset_args)

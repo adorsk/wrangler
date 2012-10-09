@@ -1,6 +1,6 @@
 config = {
-    'CACHE_DIR': '',
-    'TARGET_DIR': ''
+    'CACHE_DIR': 'cache',
+    'TARGET_DIR': 'target'
 }
 
 assets = {

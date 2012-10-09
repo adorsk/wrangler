@@ -98,9 +98,9 @@ class GitAsset(object):
         if not os.path.exists(cache_path):
             self.clone_repo(dest=cache_path)
 
-        # If no refspec was given, checkout master branch.
+        # If no refspec was given, checkout master branch and pull.
         if self.refspec is None:
-            subprocess.call("cd %s; git checkout master" % (cache_path) , shell=True)
+            subprocess.call("cd %s; git checkout master; git pull" % (cache_path) , shell=True)
 
         # Otherwise if there was a ref...
         else:

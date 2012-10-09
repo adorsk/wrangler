@@ -128,7 +128,7 @@ class GitAsset(object):
         #@TODO: move copying logic into common place?
         # If there was a path, copy just that path to the target.
         if self.path:
-            source_path = os.path.join(cache_path, copy_path)
+            source_path = os.path.join(cache_path, self.path)
 
         # Otherwise copy the whole repo.
         else:

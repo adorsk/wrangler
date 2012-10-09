@@ -28,7 +28,8 @@ class Processor(object):
             AssetClass = assets.GitAsset
             asset_args.update({
                 'uri': asset_def['uri'],
-                'refspec': asset_def.get('refspec')
+                'refspec': asset_def.get('refspec'),
+                'path': asset_def.get('path')
             })
 
         return AssetClass(**asset_args)

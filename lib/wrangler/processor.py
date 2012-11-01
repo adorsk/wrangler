@@ -35,5 +35,7 @@ class Processor(object):
             AssetClass = assets.RsyncAsset
         elif asset_type == 'hg':
             AssetClass = assets.HgAsset
+        elif asset_type == 'url':
+            AssetClass = assets.UrlAsset
 
         return AssetClass(**asset_args)

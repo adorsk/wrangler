@@ -14,13 +14,18 @@ argparser.add_argument('-f', '--assetfile', type=str, default='AssetFile.py',
                        help='AssetFile to use')
 argparser.add_argument('-c', type=str, default='.wrangler.py', 
                        help='Config file to use')
-argparser.add_argument('-t', '--targetdir', type=str, default='assets', 
+argparser.add_argument('-t', '--targetdir', type=str, 
                        help='Target dir to put assets into.')
 
 class Wrangler(object):
     def __init__(self, asset_file=None, config={}):
         self.asset_file = asset_file
-        self.config = config
+        assets_data = self.read_asset_file()
+
+        # Update config w/ options from command line.
+        self.config = {}
+        self.config.update(assets_data.get('config', {}))
+        self.config.update(config)
 
     def init(self):
         """ Create the initial AssetFile. """
@@ -36,25 +41,21 @@ class Wrangler(object):
     def clean(self):
         """ Clear out the target dir. """
         assets_data = self.read_asset_file()
-        config = assets_data['config']
-        config.update(self.config)
-        for item in os.listdir(config['TARGET_DIR']):
-            item_path = os.path.join(config['TARGET_DIR'], item)
+        for item in os.listdir(self.config['TARGET_DIR']):
+            item_path = os.path.join(self.config['TARGET_DIR'], item)
             print >> sys.stderr, "removing '%s'..." % item_path
             shutil.rmtree(item_path)
 
     def install(self):
         """ Install assets in target dir. """
         assets_data = self.read_asset_file()
-        config = assets_data['config']
-        config.update(self.config)
-        for dir_ in [config['CACHE_DIR'], config['TARGET_DIR']]:
+        for dir_ in [self.config['CACHE_DIR'], self.config['TARGET_DIR']]:
             if not os.path.exists(dir_):
-                os.mkdir(dir_)
+                os.makedirs(dir_)
 
         processor = Processor(
-            cache_dir=config['CACHE_DIR'],
-            target_dir=config['TARGET_DIR']
+            cache_dir=self.config['CACHE_DIR'],
+            target_dir=self.config['TARGET_DIR']
         )
         processor.resolve_asset_defs(assets_data['assets'])
         print >> sys.stderr, "Install finished."

@@ -15,13 +15,13 @@ class GitAsset(object):
         self.include_dot_git = include_dot_git
         self.cache_dir = cache_dir
         self.target_dir = target_dir
-        super(GitAsset, self).__init__(**kwargs)
 
     def __str__(self):
         return "%s %s" % (object.__str__(self), self.__dict__)
 
     def clone_repo(self, dest=""):
-        subprocess.call(['git', 'clone', self.source, dest])
+        cmd = "git clone %s %s" % (self.source, dest)
+        subprocess.call(cmd, shell=True)
 
     def resolve(self):
         # If already in the target, do nothing.

@@ -1,4 +1,5 @@
 import wrangler.assets as assets
+import sys
 
 
 class Processor(object):
@@ -13,6 +14,7 @@ class Processor(object):
 
     def resolve_asset_def(self, asset_id, asset_def):
         # Create asset from asset definition.
+        print >> sys.stderr, "Resolving '%s'..." % (asset_id)
         asset = self.asset_def_to_asset(asset_id, asset_def)
         asset.resolve()
 
@@ -31,5 +33,7 @@ class Processor(object):
             AssetClass = assets.GitAsset
         elif asset_type == 'rsync':
             AssetClass = assets.RsyncAsset
+        elif asset_type == 'hg':
+            AssetClass = assets.HgAsset
 
         return AssetClass(**asset_args)

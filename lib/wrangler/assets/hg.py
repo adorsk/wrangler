@@ -3,16 +3,18 @@ import copy
 
 
 #@TODO: improve passing of cache, target_dir.
-class GitAsset(object):
+#@TODO: factor out common logic shared w/ git, other SCM assets.
+class HgAsset(object):
+    """ Mercurial Asset. """
 
     def __init__(self, id=None, source=None, refspec=None, path=None, 
-                 include_dot_git=False, cache_dir=None, 
+                 include_dot_hg=False, cache_dir=None, 
                  target_dir=None, **kwargs):
         self.id = id
         self.source = source
         self.refspec = refspec
         self.path = path
-        self.include_dot_git = include_dot_git
+        self.include_dot_hg = include_dot_hg
         self.cache_dir = cache_dir
         self.target_dir = target_dir
 
@@ -20,7 +22,7 @@ class GitAsset(object):
         return "%s %s" % (object.__str__(self), self.__dict__)
 
     def clone_repo(self, dest=""):
-        cmd = "git clone %s %s" % (self.source, dest)
+        cmd = "hg clone %s %s" % (self.source, dest)
         subprocess.call(cmd, shell=True)
 
     def resolve(self):
@@ -38,27 +40,12 @@ class GitAsset(object):
 
         # If no refspec was given, checkout master branch and pull.
         if self.refspec is None:
-            subprocess.call("cd %s; git checkout master; git pull" % (cache_path) , shell=True)
+            subprocess.call("cd %s; hg checkout master; hg pull" % (cache_path) , shell=True)
 
         # Otherwise if there was a ref...
         else:
-            # If we don't have the refspec locally, then do a fetch.
-            retcode = subprocess.call(
-                ("cd %s; git rev-parse --verify -q %s") % (cache_path,
-                                                           self.refspec), 
-                shell=True
-            )
-            if retcode != 0:
-                subprocess.call(
-                    ("cd %s; git fetch") % (cache_path),
-                    shell=True
-                )
-
-            # Checkout the rev.
-            subprocess.call(
-                ("cd %s; git checkout %s") % (cache_path, self.refspec),
-                shell=True
-            )
+            #@TODO!
+            pass
 
         # Setup options for adding to target dir.
         copy_kwargs = {}
@@ -71,9 +58,9 @@ class GitAsset(object):
         # Otherwise copy the whole repo.
         else:
             source_path = cache_path
-            # Don't include .git folder if not specified.
-            if not self.include_dot_git:
-                copy_kwargs['ignore'] = shutil.ignore_patterns('.git')
+            # Don't include .hg folder if not specified.
+            if not self.include_dot_hg:
+                copy_kwargs['ignore'] = shutil.ignore_patterns('.hg')
         if os.path.isdir(source_path):
             shutil.copytree(source_path, target_path, **copy_kwargs)
         else:

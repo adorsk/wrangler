@@ -14,6 +14,8 @@ argparser.add_argument('-f', '--assetfile', type=str, default='AssetFile.py',
                        help='AssetFile to use')
 argparser.add_argument('-c', type=str, default='.wrangler.py', 
                        help='Config file to use')
+argparser.add_argument('-t', '--targetdir', type=str, default='assets', 
+                       help='Target dir to put assets into.')
 
 class Wrangler(object):
     def __init__(self, asset_file=None, config={}):
@@ -35,6 +37,7 @@ class Wrangler(object):
         """ Clear out the target dir. """
         assets_data = self.read_asset_file()
         config = assets_data['config']
+        config.update(self.config)
         for item in os.listdir(config['TARGET_DIR']):
             item_path = os.path.join(config['TARGET_DIR'], item)
             print >> sys.stderr, "removing '%s'..." % item_path
@@ -44,6 +47,7 @@ class Wrangler(object):
         """ Install assets in target dir. """
         assets_data = self.read_asset_file()
         config = assets_data['config']
+        config.update(self.config)
         for dir_ in [config['CACHE_DIR'], config['TARGET_DIR']]:
             if not os.path.exists(dir_):
                 os.mkdir(dir_)
@@ -63,7 +67,17 @@ class Wrangler(object):
 
 if __name__ == '__main__':
     args = argparser.parse_args()
+    config = {}
     action = args.action
-    wrangler = Wrangler(asset_file=args.assetfile)
+
+    args_config_attrs = {
+        'targetdir': 'TARGET_DIR'
+    }
+    for arg, config_attr in args_config_attrs.items():
+        value = getattr(args, arg, None)
+        if value is not None:
+            config[config_attr] = value
+
+    wrangler = Wrangler(asset_file=args.assetfile, config=config)
     action_method = getattr(wrangler, action)
     action_method()

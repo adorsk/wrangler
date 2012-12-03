@@ -26,16 +26,16 @@ class RsyncAsset(object):
         # Get the cache path.
         cache_path = os.path.join(self.cache_dir, self.id)
 
-        source_path = self.source
-        target_path = cache_path
-        if os.path.is_dir(self.source):
-            source_path += '/'
-            target_path == '/'
+        rsync_source_path = self.source
+        rsync_target_path = cache_path
+        if os.path.isdir(self.source):
+            rsync_source_path += '/'
+            rsync_target_path == '/'
 
         # Sync to the cache. 
         cmd = """
         rsync %s %s %s
-        """ % (self.args, source_path, target_path)
+        """ % (self.args, rsync_source_path, rsync_target_path)
         subprocess.call(cmd, shell=True)
 
         #@TODO: move copying logic into common place?
@@ -48,4 +48,7 @@ class RsyncAsset(object):
         else:
             source_path = cache_path
 
-        shutil.copytree(source_path, target_path, **copy_kwargs)
+        if os.path.isdir(source_path): 
+            shutil.copytree(source_path, target_path, **copy_kwargs)
+        else:
+            shutil.copy(source_path, target_path)

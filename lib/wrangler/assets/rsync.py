@@ -5,7 +5,7 @@ import copy
 #@TODO: improve passing of cache, target_dir.
 class RsyncAsset(object):
 
-    def __init__(self, id=None, source=None, path=None, args=None,
+    def __init__(self, id=None, source=None, path=None, args='-aL',
                  cache_dir=None, target_dir=None, **kwargs):
         self.id = id
         self.source = source
@@ -26,10 +26,16 @@ class RsyncAsset(object):
         # Get the cache path.
         cache_path = os.path.join(self.cache_dir, self.id)
 
+        source_path = self.source
+        target_path = cache_path
+        if os.path.is_dir(self.source):
+            source_path += '/'
+            target_path == '/'
+
         # Sync to the cache. 
         cmd = """
-        rsync -aL %s %s/ %s/
-        """ % (self.args, self.source, cache_path)
+        rsync %s %s %s
+        """ % (self.args, source_path, target_path)
         subprocess.call(cmd, shell=True)
 
         #@TODO: move copying logic into common place?

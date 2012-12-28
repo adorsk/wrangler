@@ -8,12 +8,13 @@ import tempfile
 class UrlAsset(object):
 
     def __init__(self, id=None, source=None, cache_dir=None, 
-                 target_dir=None, unzip=False, path=None, **kwargs):
+                 target_dir=None, unzip=False, untar=False, path=None, **kwargs):
         self.id = id
         self.source = source
         self.cache_dir = cache_dir
         self.target_dir = target_dir
         self.unzip = unzip
+        self.untar = untar
         self.path = path
 
     def __str__(self):
@@ -45,6 +46,17 @@ class UrlAsset(object):
             tmpdir = tempfile.mkdtemp()
             unzip_cmd = "unzip -d %s %s" % (tmpdir, cache_path)
             subprocess.call(unzip_cmd, shell=True)
+            if self.path:
+                source_path = os.path.join(tmpdir, self.path)
+            else:
+                source_path = tmpdir
+        else:
+            source_path = cache_path
+
+        if self.untar:
+            tmpdir = tempfile.mkdtemp()
+            cmd = "tar -xzf %s -C %s" % (cache_path, tmpdir)
+            subprocess.call(cmd, shell=True)
             if self.path:
                 source_path = os.path.join(tmpdir, self.path)
             else:

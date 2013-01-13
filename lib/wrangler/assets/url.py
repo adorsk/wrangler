@@ -50,10 +50,8 @@ class UrlAsset(object):
                 source_path = os.path.join(tmpdir, self.path)
             else:
                 source_path = tmpdir
-        else:
-            source_path = cache_path
 
-        if self.untar:
+        elif self.untar:
             tmpdir = tempfile.mkdtemp()
             cmd = "tar -xzf %s -C %s" % (cache_path, tmpdir)
             subprocess.call(cmd, shell=True)
